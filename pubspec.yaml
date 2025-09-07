@@ -1,20 +1,28 @@
-
-name: snowgo_app
-description: SnowGo demo
+name: snow_go
+description: SnowGo – snow clearing marketplace
 environment:
-  sdk: ">=3.0.0 <4.0.0"
+  sdk: ">=3.3.0 <4.0.0"
+
 dependencies:
   flutter:
     sdk: flutter
-  firebase_core: ^2.12.0
-  firebase_auth: ^4.6.0
+  # Firebase
+  firebase_core: ^2.24.2
+  firebase_auth: ^4.17.8
   cloud_firestore: ^4.17.5
+  # UI
+  google_fonts: ^6.2.1
   google_maps_flutter: ^2.4.0
   geolocator: ^9.0.2
   permission_handler: ^11.3.1
   shared_preferences: ^2.1.1
 
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
 flutter:
+  uses-material-design: true
   assets:
     - assets/logo.png
     - assets/welcome_illustration.png
