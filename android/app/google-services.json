@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "231046720884",
+    "firebase_url": "https://snowclearing-22e83-default-rtdb.firebaseio.com",
+    "project_id": "snowclearing-22e83",
+    "storage_bucket": "snowclearing-22e83.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:231046720884:android:a0ad79d503baebaa55d021",
+        "android_client_info": {
+          "package_name": "com.masstech.snow_go"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBbSHu9HWcqc8LhvWYl-_FwsGdmV_n-pv0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
