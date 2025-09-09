@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:snow_go/screens/customer_signup_screen.dart';
 import 'providers/jobs_provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/job_form_screen.dart';
 import 'screens/job_details_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/jobs_list_screen.dart';
+import 'screens/login_screen.dart';
+import 'screens/provider_signup_screen.dart';
+import 'screens/customer_signup_screen.dart';
 
 void main() => runApp(const SnowGoApp());
 
@@ -28,11 +32,14 @@ class SnowGoApp extends StatelessWidget {
             centerTitle: true,
           ),
         ),
-        initialRoute: HomeScreen.route,
+        initialRoute: LoginScreen.route,
         routes: {
+          LoginScreen.route: (_) => const LoginScreen(),
           HomeScreen.route: (_) => const HomeScreen(),
           JobFormScreen.route: (_) => const JobFormScreen(),
           JobsListScreen.route: (_) => const JobsListScreen(),
+          ProviderSignupScreen.route: (_) => const ProviderSignupScreen(),
+          CustomerSignupScreen.route: (_) => const CustomerSignupScreen(),
         },
       ),
     );

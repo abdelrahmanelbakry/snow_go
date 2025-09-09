@@ -28,22 +28,22 @@ dev_dependencies:
 
 flutter_native_splash:
   color: "#0E63F6"          # brand blue background
-  image: assets/snowgo_splash.png  # your full logo (white or transparent works best)
+  image: assets/snowgo_splash_2.png  # your full logo (white or transparent works best)
 #  branding: assets/snowgo_logo_white_48px.png # optional secondary mark below
   android: true
   ios: true
   web: false
 
   android_12:
-    image: assets/snowgo_splash.png
+    image: assets/snowgo_splash_2.png
     color: "#0E63F6"
 
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: assets/snowgo_splash.png
+  image_path: assets/snowgo_splash_2.png
   adaptive_icon_background: "#0E63F6"   # brand blue
-  adaptive_icon_foreground: assets/snowgo_splash.png
+  adaptive_icon_foreground: assets/snowgo_splash_2.png
 
 flutter:
   uses-material-design: true
@@ -57,4 +57,6 @@ flutter:
     - assets/snowgo_mark_white_28.png
     - assets/tracking.svg
     - assets/book.svg
-    - assets/snowgo_splash.png
+    - assets/snowgo_splash_2.png
+    - assets/google_g.png
+    - assets/apple_logo.png
