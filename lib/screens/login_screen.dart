@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:snow_go/screens/root_nav.dart';
 import 'provider_signup_screen.dart';
 import 'customer_signup_screen.dart';
-import 'home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   static const route = '/login';
@@ -26,7 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _login() async {
-    Navigator.pushReplacementNamed(context, HomeScreen.route);
+    Navigator.pushReplacementNamed(context, RootNav.route);
     //
     // if (!(_form.currentState?.validate() ?? false)) return;
     // setState(() => _loading = true);
@@ -52,7 +52,7 @@ class _LoginScreenState extends State<LoginScreen> {
             Column(
               children: [
                 // Replace with your transparent PNG/SVG
-                Image.asset('assets/logo.png', height: 250)
+                Image.asset('assets/logo_transparent_2.png', height: 250)
                 //,
               //  const SizedBox(height: 8)
               ],

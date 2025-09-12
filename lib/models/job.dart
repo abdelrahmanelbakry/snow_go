@@ -13,6 +13,7 @@ class Job {
   final DateTime scheduledAt;
   final String? notes;
   final JobStatus status;
+  final bool addonSalting;
 
   const Job({
     required this.id,
@@ -21,6 +22,7 @@ class Job {
     required this.service,
     required this.price,
     required this.scheduledAt,
+    this.addonSalting = false,
     this.notes,
     this.status = JobStatus.newRequest,
   });

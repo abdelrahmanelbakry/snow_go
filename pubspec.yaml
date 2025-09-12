@@ -54,9 +54,11 @@ flutter:
     - assets/snowgo_logo_white_48px.png
     - assets/snowgo_logo_white.png
     - assets/snowgo_mark_white_24.png
+    - assets/snowgo_mark_white.png
     - assets/snowgo_mark_white_28.png
     - assets/tracking.svg
     - assets/book.svg
     - assets/snowgo_splash_2.png
     - assets/google_g.png
     - assets/apple_logo.png
+    - assets/logo_transparent_2.png
