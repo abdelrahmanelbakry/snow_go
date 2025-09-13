@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <g fill="#FFFFFF">
+    <!-- Shovel (simplified) -->
+    <rect x="500" y="200" width="24" height="300" rx="12" transform="rotate(-30 512 256)" />
+    <path d="M470 120h84a10 10 0 0 1 10 10v30a10 10 0 0 1-10 10h-84a10 10 0 0 1-10-10v-30a10 10 0 0 1 10-10z" />
+    <path d="M440 500h140c10 0 15 10 12 18l-20 66c-7 22-25 36-48 36h-16c-23 0-41-14-48-36l-20-66c-3-8 2-18 12-18z" />
+    <!-- Snowflake (simplified cross with diagonals) -->
+    <rect x="492" y="300" width="40" height="220" rx="20" />
+    <rect x="402" y="390" width="220" height="40" rx="20" />
+    <rect x="442" y="330" width="40" height="220" rx="20" transform="rotate(45 462 440)" />
+    <rect x="502" y="330" width="40" height="220" rx="20" transform="rotate(-45 522 440)" />
+    <!-- Wordmark "SnowGo" -->
+    <text x="200" y="880" font-family="Arial, Helvetica, sans-serif" font-weight="bold" font-size="180" fill="#FFFFFF">SnowGo</text>
+  </g>
+</svg>

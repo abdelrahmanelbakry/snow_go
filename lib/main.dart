@@ -21,7 +21,7 @@ class SnowGoApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => JobsProvider(),
+      create: (_) => AtomicJobsProvider(),
       child: MaterialApp(
         title: 'SnowGo',
         debugShowCheckedModeBanner: false,
