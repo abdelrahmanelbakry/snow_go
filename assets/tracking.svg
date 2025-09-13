@@ -1,0 +1,18 @@
+<svg width="512" height="360" viewBox="0 0 512 360" xmlns="http://www.w3.org/2000/svg">
+  <!-- tint background -->
+  <rect x="0" y="0" width="512" height="360" fill="#EFF7FF"></rect>
+  <!-- map tiles -->
+  <g opacity="0.9">
+    <rect x="60" y="86" width="392" height="188" rx="16" fill="#FFFFFF"></rect>
+    <path d="M60 140h392M60 194h392M164 86v188M268 86v188M372 86v188" stroke="#DDE7F7" stroke-width="2"></path>
+  </g>
+  <!-- path -->
+  <path d="M92 250c46-24 92-44 138-44s92 26 138 26 46-14 92-14" fill="none" stroke="#0E63F6" stroke-width="6" stroke-linecap="round" stroke-dasharray="10 10"></path>
+  <!-- start dot -->
+  <circle cx="92" cy="250" r="7" fill="#0E63F6"></circle>
+  <!-- destination pin -->
+  <g transform="translate(356,132)">
+    <path d="M60 0c-26 0-48 21-48 48 0 34 39 69 45 74 2 2 4 2 6 0 6-5 45-40 45-74 0-27-22-48-48-48z" fill="#0E63F6"></path>
+    <circle cx="60" cy="48" r="16" fill="#FFFFFF"></circle>
+  </g>
+</svg>

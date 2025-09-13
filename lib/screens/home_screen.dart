@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:snow_go/screens/booking_screen.dart';
-
+import '../providers/jobs_provider.dart';
+import '../widgets/atomic_job_card.dart';
 import 'booking_confirmation_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -227,17 +229,61 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 10),
-          SizedBox(
-            height: 120,
-            child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              scrollDirection: Axis.horizontal,
-              children: const [
-                _JobCard(title: 'Driveway • Today 4:00 PM', price: 'CA\$45.00'),
-                SizedBox(width: 12),
-                _JobCard(title: 'Salting • Tomorrow 9:00 AM', price: 'CA\$25.50'),
-              ],
-            ),
+          Consumer<AtomicJobsProvider>(
+            builder: (context, jobsProvider, child) {
+              if (jobsProvider.isLoading) {
+                return const SizedBox(
+                  height: 120,
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+
+              if (jobsProvider.error != null) {
+                return SizedBox(
+                  height: 120,
+                  child: Center(
+                    child: Text(
+                      'Error: ${jobsProvider.error}',
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  ),
+                );
+              }
+
+              final upcomingJobs = jobsProvider.jobs
+                  .where((job) => job.scheduledAt.isAfter(DateTime.now()))
+                  .take(3)
+                  .toList();
+
+              if (upcomingJobs.isEmpty) {
+                return const SizedBox(
+                  height: 120,
+                  child: Center(
+                    child: Text('No upcoming jobs'),
+                  ),
+                );
+              }
+
+              return SizedBox(
+                height: 120,
+                child: ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  scrollDirection: Axis.horizontal,
+                  itemCount: upcomingJobs.length,
+                  itemBuilder: (context, index) {
+                    final job = upcomingJobs[index];
+                    return Container(
+                      width: 260,
+                      margin: EdgeInsets.only(right: index < upcomingJobs.length - 1 ? 12 : 0),
+                      child: AtomicJobCard(
+                        job: job,
+                        showActions: false,
+                      ),
+                    );
+                  },
+                ),
+              );
+            },
           ),
           const SizedBox(height: 18),
         ],
