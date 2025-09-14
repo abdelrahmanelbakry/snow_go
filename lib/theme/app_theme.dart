@@ -1,36 +1,60 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-ThemeData buildAppTheme() {
-  const seed = Color(0xFF1C6DD0); // winter blue
-  final base = ThemeData(
-    colorScheme: ColorScheme.fromSeed(seedColor: seed, brightness: Brightness.light),
-    useMaterial3: true,
-  );
+class AppTheme {
+  static ThemeData build() {
+    // Force LIGHT to match design previews exactly
+    final base = ThemeData(
+      brightness: Brightness.light,
+      colorSchemeSeed: const Color(0xFF0E63F6),
+      useMaterial3: true,
+    );
 
-  // Apply Inter across the app
-  final textTheme = GoogleFonts.interTextTheme(base.textTheme);
+    const radius = 16.0;
+    final inputBorder = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(radius),
+      borderSide: BorderSide(color: Colors.black12),
+    );
 
-  return base.copyWith(
-    textTheme: textTheme,
-    appBarTheme: AppBarTheme(
-      elevation: 0,
-      centerTitle: false,
-      backgroundColor: base.colorScheme.surface,
-      foregroundColor: base.colorScheme.onSurface,
-      titleTextStyle: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-    ),
-    // If your Flutter complains about CardTheme types, just omit cardTheme entirely.
-    // input / buttons are stable across versions:
-    inputDecorationTheme: const InputDecorationTheme(
-      border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
-      contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-    ),
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ElevatedButton.styleFrom(
-        minimumSize: const Size.fromHeight(48),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+    return base.copyWith(
+      visualDensity: VisualDensity.standard,
+      scaffoldBackgroundColor: Colors.white,
+      appBarTheme: base.appBarTheme.copyWith(
+        elevation: 0,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black87,
+        centerTitle: false,
+        titleTextStyle: base.textTheme.titleLarge?.copyWith(
+          fontWeight: FontWeight.w700,
+          color: Colors.black87,
+        ),
       ),
-    ),
-  );
+      cardTheme: CardThemeData(
+        elevation: 0,
+        color: const Color(0xFFF7F7F9), // stable neutral card bg
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius)),
+        margin: EdgeInsets.zero,
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: const Color(0xFFF7F7F9),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        border: inputBorder,
+        enabledBorder: inputBorder,
+        focusedBorder: inputBorder.copyWith(
+          borderSide: BorderSide(color: base.colorScheme.primary, width: 1.6),
+        ),
+        labelStyle: const TextStyle(color: Colors.black87),
+      ),
+      chipTheme: base.chipTheme.copyWith(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+      ),
+      listTileTheme: const ListTileThemeData(
+        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      ),
+      textTheme: base.textTheme.apply(
+        bodyColor: Colors.black87,
+        displayColor: Colors.black87,
+      ),
+    );
+  }
 }
