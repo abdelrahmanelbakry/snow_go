@@ -11,7 +11,7 @@ class JobsListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final jobs = context.watch<AtomicJobsProvider>().jobs;
+    final jobs = Provider.of<AtomicJobsProvider>(context).state.sortedJobs;
 
     return Scaffold(
       appBar: AppBar(

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:snow_go/models/service_type.dart';
-import '../models/job.dart';
+import 'package:snow_go/models/job.dart';
+import '../models/atomic_job.dart' show JobStatus;
 
 class JobCard extends StatelessWidget {
   final Job job;
@@ -53,7 +53,7 @@ class JobCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  '${job.customerName} · ${job.service.label}',
+                  '${job.customerName} · ${job.service.name}',
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
                   maxLines: 1, overflow: TextOverflow.ellipsis,
                 ),

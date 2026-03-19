@@ -15,6 +15,7 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
@@ -22,27 +23,63 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.masstech.snow_go"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
-        versionCode = flutter.versionCode
-        versionName = flutter.versionName
+        minSdk = 21  // Required for Firebase Analytics and Crashlytics
+        targetSdk = 34
+        versionCode = 1
+        versionName = "1.0.0"
+        
+        // Add Google Maps API key placeholder
+        manifestPlaceholders["GOOGLE_MAPS_API_KEY"] = "YOUR_PRODUCTION_GOOGLE_MAPS_API_KEY"
     }
 
+    signingConfigs {
+        create("release") {
+            // Production signing configuration
+            keyAlias = "snowgo-release"
+            keyPassword = System.getenv("KEYSTORE_PASSWORD")
+            storeFile = file("../keystore/snowgo-release.keystore")
+            storePassword = System.getenv("KEYSTORE_PASSWORD")
+        }
+    }
+    
     buildTypes {
+        debug {
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
+            isDebuggable = true
+        }
+        
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.getByName("release")
+            
+            // Production configuration
+            manifestPlaceholders["GOOGLE_MAPS_API_KEY"] = System.getenv("GOOGLE_MAPS_API_KEY_PROD") ?: "YOUR_PRODUCTION_GOOGLE_MAPS_API_KEY"
         }
     }
 }
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.2.3")
+    
+    // Firebase BOM for version management
+    implementation(platform("com.google.firebase:firebase-bom:32.3.1"))
+    
+    // Firebase Analytics and Crashlytics
+    implementation("com.google.firebase:firebase-analytics-ktx")
+    implementation("com.google.firebase:firebase-crashlytics-ktx")
+    implementation("com.google.firebase:firebase-perf-ktx")
+    
+    // Google Play Services for Maps
+    implementation("com.google.android.gms:play-services-maps:18.1.0")
+    implementation("com.google.android.gms:play-services-location:21.0.1")
 }
 
 apply(plugin = "com.google.gms.google-services")

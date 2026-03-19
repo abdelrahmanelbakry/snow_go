@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import '../home_screen.dart';
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
 import 'signup_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -20,18 +20,19 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _login() async {
     if (!_form.currentState!.validate()) return;
     setState(() { _busy = true; _err = null; });
-    try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _email.text.trim(),
-        password: _password.text.trim(),
-      );
-      if (!mounted) return;
-      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const HomeScreen()));
-    } on FirebaseAuthException catch (e) {
-      setState(() { _err = e.message; });
-    } finally {
-      if (mounted) setState(() { _busy = false; });
+    
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final success = await authProvider.signInWithEmail(
+      _email.text.trim(),
+      _password.text.trim(),
+    );
+    
+    if (!success) {
+      setState(() { _err = authProvider.error; });
     }
+    // AuthWrapper will handle navigation automatically
+    
+    setState(() { _busy = false; });
   }
 
   @override

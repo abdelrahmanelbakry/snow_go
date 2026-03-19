@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'service_type.dart';
-
-enum JobStatus { newRequest, assigned, inProgress, completed, cancelled }
+import 'atomic_job.dart' show JobStatus;
 
 @immutable
 class Job {

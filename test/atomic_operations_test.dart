@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:snow_go/core/atomic_state.dart';
-import 'package:snow_go/core/atomic_operations.dart';
 import 'package:snow_go/models/atomic_job.dart';
 import 'package:snow_go/models/service_type.dart';
 import 'package:snow_go/providers/jobs_provider.dart';
@@ -82,7 +81,8 @@ void main() {
       final jobId = result.data!.id;
 
       // Act - Try to go directly from newRequest to completed
-      final updateResult = await jobsProvider.updateJobStatus(jobId, JobStatus.completed);
+      final updateResult =
+          await jobsProvider.updateJobStatus(jobId, JobStatus.completed);
 
       // Assert - Should fail with error (the error is caught and returned as failure)
       expect(updateResult.isFailure, true);
@@ -112,7 +112,8 @@ void main() {
       expect(assignResult.isSuccess, true);
       expect(assignResult.data?.providerId, 'provider_123');
       expect(assignResult.data?.status, JobStatus.assigned);
-      expect(assignResult.data?.version, 3); // Create=1, Assign=2, Status change=3
+      expect(
+          assignResult.data?.version, 3); // Create=1, Assign=2, Status change=3
     });
 
     test('should handle concurrent updates with optimistic locking', () async {
@@ -158,7 +159,8 @@ void main() {
       // Assert
       final finalJob = jobsProvider.getJobById(jobId)!;
       expect(finalJob.status, JobStatus.completed);
-      expect(finalJob.statusHistory.length, 4); // create, assign, start, complete
+      expect(
+          finalJob.statusHistory.length, 4); // create, assign, start, complete
       expect(finalJob.version, 4); // Each operation increments version
     });
 
@@ -220,7 +222,10 @@ void main() {
         price: 50.0,
         scheduledAt: DateTime.now().add(const Duration(hours: 2)),
       );
-      final job = result.data!;
+      
+      // Assert the job was created successfully
+      expect(result.isSuccess, true);
+      expect(result.data, isNotNull);
 
       // Act - Operations should be queued
       expect(jobsProvider.pendingOperationsCount, greaterThan(0));

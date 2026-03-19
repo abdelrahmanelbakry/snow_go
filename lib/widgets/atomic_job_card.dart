@@ -3,19 +3,21 @@ import 'package:provider/provider.dart';
 import '../models/atomic_job.dart';
 import '../models/service_type.dart';
 import '../providers/jobs_provider.dart';
-import '../core/atomic_state.dart';
+import '../providers/auth_provider.dart';
 
 /// Atomic job card widget with optimistic updates
 class AtomicJobCard extends StatefulWidget {
   final AtomicJob job;
   final VoidCallback? onTap;
   final bool showActions;
+  final bool compact;
 
   const AtomicJobCard({
     super.key,
     required this.job,
     this.onTap,
     this.showActions = true,
+    this.compact = false,
   });
 
   @override
@@ -29,6 +31,10 @@ class _AtomicJobCardState extends State<AtomicJobCard> {
   Widget build(BuildContext context) {
     const blue = Color(0xFF0E63F6);
     const navy = Color(0xFF0E2B4D);
+
+    if (widget.compact) {
+      return _buildCompactCard(context, blue, navy);
+    }
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
@@ -78,6 +84,8 @@ class _AtomicJobCardState extends State<AtomicJobCard> {
                         fontWeight: FontWeight.w600,
                         fontSize: 16,
                       ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
                   ),
                 ],
@@ -89,7 +97,13 @@ class _AtomicJobCardState extends State<AtomicJobCard> {
                 children: [
                   const Icon(Icons.location_on_outlined, color: navy, size: 20),
                   const SizedBox(width: 8),
-                  Expanded(child: Text(widget.job.address)),
+                  Expanded(
+                    child: Text(
+                      widget.job.address,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 8),
@@ -105,7 +119,12 @@ class _AtomicJobCardState extends State<AtomicJobCard> {
                     size: 20,
                   ),
                   const SizedBox(width: 8),
-                  Text(widget.job.service.label),
+                  Expanded(
+                    child: Text(
+                      widget.job.service.name,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                   if (widget.job.addonSalting) ...[
                     const Text(' + '),
                     const Icon(Icons.snowing, size: 16, color: navy),
@@ -129,7 +148,13 @@ class _AtomicJobCardState extends State<AtomicJobCard> {
                 children: [
                   const Icon(Icons.schedule, color: navy, size: 20),
                   const SizedBox(width: 8),
-                  Text(_formatSchedule(widget.job.scheduledAt)),
+                  Expanded(
+                    child: Text(
+                      _formatSchedule(widget.job.scheduledAt),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ),
                 ],
               ),
 
@@ -148,6 +173,8 @@ class _AtomicJobCardState extends State<AtomicJobCard> {
                           fontStyle: FontStyle.italic,
                           color: Colors.grey,
                         ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
                       ),
                     ),
                   ],
@@ -159,6 +186,79 @@ class _AtomicJobCardState extends State<AtomicJobCard> {
                 const SizedBox(height: 16),
                 _buildActions(context),
               ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCompactCard(BuildContext context, Color blue, Color navy) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      elevation: 2,
+      child: InkWell(
+        onTap: widget.onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Status and price row
+              Row(
+                children: [
+                  _StatusChip(status: widget.job.status),
+                  const Spacer(),
+                  Text(
+                    'CA\$${widget.job.price.toStringAsFixed(2)}',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: blue,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+
+              // Customer name
+              Text(
+                widget.job.customerName,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+              ),
+              const SizedBox(height: 4),
+
+              // Service and address
+              Row(
+                children: [
+                  Icon(
+                    widget.job.service == ServiceType.driveway
+                        ? Icons.directions_car_rounded
+                        : Icons.snowing,
+                    color: navy,
+                    size: 16,
+                  ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      widget.job.address,
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
@@ -222,22 +322,35 @@ class _AtomicJobCardState extends State<AtomicJobCard> {
   }
 
   Future<void> _assignJob(BuildContext context) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final currentUser = authProvider.user;
+    
+    if (currentUser == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please log in to accept jobs'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    
     await _performAtomicOperation(
       context,
-      () => context.read<AtomicJobsProvider>().assignProvider(
+      () => Provider.of<AtomicJobsProvider>(context, listen: false).assignProvider(
         widget.job.id,
-        'provider_demo',
-        reason: 'Assigned via UI',
+        currentUser.uid,
+        reason: 'Accepted by provider',
       ),
-      'Job assigned successfully',
-      'Failed to assign job',
+      'Job accepted successfully',
+      'Failed to accept job',
     );
   }
 
   Future<void> _startJob(BuildContext context) async {
     await _performAtomicOperation(
       context,
-      () => context.read<AtomicJobsProvider>().startJob(
+      () => Provider.of<AtomicJobsProvider>(context, listen: false).startJob(
         widget.job.id,
         reason: 'Started via UI',
       ),
@@ -249,7 +362,7 @@ class _AtomicJobCardState extends State<AtomicJobCard> {
   Future<void> _completeJob(BuildContext context) async {
     await _performAtomicOperation(
       context,
-      () => context.read<AtomicJobsProvider>().completeJob(
+      () => Provider.of<AtomicJobsProvider>(context, listen: false).completeJob(
         widget.job.id,
         reason: 'Completed via UI',
       ),
@@ -278,12 +391,15 @@ class _AtomicJobCardState extends State<AtomicJobCard> {
     );
 
     if (confirmed == true) {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final currentUser = authProvider.user;
+      
       await _performAtomicOperation(
         context,
-        () => context.read<AtomicJobsProvider>().cancelJob(
+        () => Provider.of<AtomicJobsProvider>(context, listen: false).cancelJob(
           widget.job.id,
           reason: 'Cancelled via UI',
-          userId: 'current_user',
+          userId: currentUser?.uid ?? 'unknown',
         ),
         'Job cancelled successfully',
         'Failed to cancel job',
@@ -293,7 +409,7 @@ class _AtomicJobCardState extends State<AtomicJobCard> {
 
   Future<void> _performAtomicOperation(
     BuildContext context,
-    Future<AtomicResult<AtomicJob>> Function() operation,
+    Future<dynamic> Function() operation,
     String successMessage,
     String errorMessage,
   ) async {
@@ -302,7 +418,7 @@ class _AtomicJobCardState extends State<AtomicJobCard> {
     try {
       final result = await operation();
       
-      if (result.isSuccess) {
+      if (result != null && result.isSuccess) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

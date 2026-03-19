@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
-
+import 'package:provider/provider.dart';
+import '../services/auth_service.dart';
+import '../providers/jobs_provider.dart';
+import '../widgets/map_picker.dart';
+import '../models/service_type.dart';
 import 'booking_confirmation_screen.dart';
 
 class BookingScreen extends StatefulWidget {
@@ -90,49 +94,69 @@ class _BookingScreenState extends State<BookingScreen> {
 
     setState(() => _submitting = true);
 
-    // Compose a request object you can pass to your next screen / API.
-    final DateTime scheduledAt;
-    if (_scheduleNow) {
-      scheduledAt = DateTime.now();
-    } else {
-      final d = _date!;
-      final t = _time!;
-      scheduledAt = DateTime(d.year, d.month, d.day, t.hour, t.minute);
-    }
+    try {
+      final authService = Provider.of<AuthService>(context, listen: false);
+      final jobsProvider = Provider.of<AtomicJobsProvider>(context, listen: false);
+      
+      final user = authService.currentUser;
+      if (user == null) {
+        throw Exception('User not authenticated');
+      }
 
-    final req = JobRequest(
-      address: _address!,
-      scheduledAt: scheduledAt,
-      scheduleNow: _scheduleNow,
-      addonSalting: _addonSalting,
-      price: double.parse(_priceCtrl.text.trim()),
-      notes: _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
-    );
+      // Compose scheduled date
+      final DateTime scheduledAt;
+      if (_scheduleNow) {
+        scheduledAt = DateTime.now();
+      } else {
+        final d = _date!;
+        final t = _time!;
+        scheduledAt = DateTime(d.year, d.month, d.day, t.hour, t.minute);
+      }
 
-    // TODO: Navigate to confirmation or send to backend
-    // For now just pop with result:
-    await Future.delayed(const Duration(milliseconds: 300));
-    if (!mounted) return;
-    setState(() => _submitting = false);
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) =>
-            BookingConfirmationScreen(
+      // Create job via backend
+      final result = await jobsProvider.addJob(
+        customerId: user.uid,
+        customerName: user.displayName ?? 'Unknown',
+        address: _address!,
+        service: ServiceType.driveway,
+        scheduledAt: scheduledAt,
+        price: double.parse(_priceCtrl.text.trim()),
+        addonSalting: _addonSalting,
+        notes: _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
+      );
+
+      if (!mounted) return;
+      
+      if (result.isSuccess) {
+        // Navigate to confirmation screen
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => BookingConfirmationScreen(
               address: _address!,
-              // from your booking state
               scheduledAt: scheduledAt,
-              // now or selected future time
-              primaryService: _addonSalting ? 'Driveway' : 'Driveway',
-              // or whatever you label
+              primaryService: 'Driveway',
               addonSalting: _addonSalting,
               price: double.tryParse(_priceCtrl.text.trim()),
-              notes: _notesCtrl.text
-                  .trim()
-                  .isEmpty ? null : _notesCtrl.text.trim(),
+              notes: _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
             ),
-      ),
-    );
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to create job: ${result.error}')),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error creating job: $e')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _submitting = false);
+      }
+    }
   }
 
   @override
@@ -147,7 +171,7 @@ class _BookingScreenState extends State<BookingScreen> {
         title: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset('assets/logo.png', height: 22),
+            Image.asset('assets/snowgo_mark_white.png', height: 28),
             const SizedBox(width: 8),
             const Text('New Booking',
                 style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
@@ -161,9 +185,14 @@ class _BookingScreenState extends State<BookingScreen> {
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
             children: [
               // Map picker hero
-              _MapPicker(
-                initialAddress: _address,
-                onAddressChanged: (addr) => setState(() => _address = addr),
+              SizedBox(
+                height: 200,
+                child: MapPicker(
+                  initialAddress: _address,
+                  onLocationSelected: (address, location) {
+                    setState(() => _address = address);
+                  },
+                ),
               ),
               const SizedBox(height: 14),
 
@@ -347,63 +376,6 @@ class _CardSection extends StatelessWidget {
         border: Border.all(color: const Color(0xFFE5E7EB)),
       ),
       child: child,
-    );
-  }
-}
-
-/// Stub for your real map picker integration.
-/// Replace the internal Container with your Google Map / Mapbox widget
-/// and call onAddressChanged(...) whenever the user picks/moves the pin.
-class _MapPicker extends StatelessWidget {
-  final String? initialAddress;
-  final ValueChanged<String> onAddressChanged;
-
-  const _MapPicker({
-    required this.onAddressChanged,
-    this.initialAddress,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    const blue = Color(0xFF0E63F6);
-    return Container(
-      height: 180,
-      decoration: BoxDecoration(
-        color: const Color(0xFFEAF2FA),
-        borderRadius: BorderRadius.circular(16),
-        image: const DecorationImage(
-          image: AssetImage('assets/map_grid.png'), // optional placeholder
-          fit: BoxFit.cover,
-          opacity: 0.15,
-        ),
-      ),
-      child: Stack(
-        children: [
-          // Center pin
-          const Center(
-            child: Icon(Icons.location_pin, size: 48, color: blue),
-          ),
-          // Fake "confirm" to simulate address updates
-          Positioned(
-            right: 12,
-            bottom: 12,
-            child: ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: blue,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              onPressed: () {
-                // In your real map, reverse-geocode here.
-                onAddressChanged(initialAddress ?? '1234 Main St');
-              },
-              icon: const Icon(Icons.check),
-              label: const Text('Use this location'),
-            ),
-          )
-        ],
-      ),
     );
   }
 }

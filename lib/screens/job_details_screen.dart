@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:snow_go/models/service_type.dart';
 import '../providers/jobs_provider.dart';
 import '../models/atomic_job.dart';
 import '../widgets/status_pill.dart';
@@ -14,7 +13,7 @@ class JobDetailsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final jobId = ModalRoute.of(context)!.settings.arguments as String;
-    final provider = context.watch<AtomicJobsProvider>();
+    final provider = Provider.of<AtomicJobsProvider>(context);
     final job = provider.getJobById(jobId)!;
     final df = DateFormat('EEE, MMM d • h:mm a');
 
@@ -49,7 +48,7 @@ class JobDetailsScreen extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          '${job.customerName} · ${job.service.label}',
+                          '${job.customerName} · ${job.service.name}',
                           style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
                         ),
                       ),
@@ -88,7 +87,7 @@ class _ActionButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.read<AtomicJobsProvider>();
+    final provider = Provider.of<AtomicJobsProvider>(context, listen: false);
 
     switch (job.status) {
       case JobStatus.newRequest:

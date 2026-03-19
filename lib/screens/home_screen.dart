@@ -1,188 +1,129 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:snow_go/screens/booking_screen.dart';
 import '../providers/jobs_provider.dart';
+import '../providers/auth_provider.dart';
+import '../services/auth_service.dart';
 import '../widgets/atomic_job_card.dart';
-import 'booking_confirmation_screen.dart';
+import 'booking_screen.dart';
+import 'provider_dashboard_screen.dart';
+import '../widgets/jobs_map_widget.dart';
 
-class HomeScreen extends StatelessWidget {
-  static const route = '/';
+class HomeScreen extends StatefulWidget {
+  static const String route = '/home';
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Jobs are already initialized with seed data in AtomicJobsProvider constructor
+  }
 
   @override
   Widget build(BuildContext context) {
     const blue = Color(0xFF0E63F6);
-    const navy = Color(0xFF0E2B4D);
 
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: blue,
-        elevation: 0,
-        titleSpacing: 0,
-        automaticallyImplyLeading : false,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset('assets/snowgo_mark_white.png', height: 28),
-            const Text('SnowGo',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w900,
-                )),
-          ],
-        ),
-        centerTitle: true,
-        // leading: IconButton(
-        //   icon: const Icon(Icons.menu, color: Colors.white),
-        //   onPressed: () {}, // TODO: open drawer (optional)
-        // ),
-      ),
-      body: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          // Search over a subtle "map" hero
-          Stack(
-            children: [
-              // Map placeholder (use your map widget later)
-              Container(
-                height: 210,
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Color(0xFFEAF2FA), Color(0xFFDDE7F4)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
-                child: Center(
-                  child: Icon(Icons.location_pin, size: 52, color: blue),
-                ),
-              ),
-              Positioned.fill(
-                top: 14,
-                child: Align(
-                  alignment: Alignment.topCenter,
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 16),
-                    padding: const EdgeInsets.symmetric(horizontal: 14),
-                    height: 48,
-                    decoration: BoxDecoration(
+    return Consumer<AuthProvider>(
+      builder: (context, authProvider, child) {
+        final isProvider = authProvider.isProvider;
+
+        return Scaffold(
+          backgroundColor: const Color(0xFFF8FAFC),
+          appBar: AppBar(
+            backgroundColor: blue,
+            elevation: 0,
+            titleSpacing: 0,
+            automaticallyImplyLeading: false,
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset('assets/snowgo_mark_white.png', height: 28),
+                Text(isProvider ? 'SnowGo Provider' : 'SnowGo',
+                    style: const TextStyle(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Color(0x15000000),
-                          blurRadius: 10,
-                          offset: Offset(0, 4),
-                        )
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.search, color: Color(0xFF9CA3AF)),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: TextField(
-                            decoration: const InputDecoration(
-                              hintText: 'Search address',
-                              border: InputBorder.none,
-                            ),
-                            textInputAction: TextInputAction.search,
-                            onSubmitted: (v) {
-                              // TODO: launch address search
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
+                      fontWeight: FontWeight.w900,
+                    )),
+              ],
+            ),
+            centerTitle: true,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.notifications_outlined, color: Colors.white),
+                onPressed: () {
+                  Navigator.pushNamed(context, '/notifications');
+                },
+              ),
+              PopupMenuButton<String>(
+                icon: const Icon(Icons.account_circle, color: Colors.white),
+                onSelected: (value) {
+                  if (value == 'logout') {
+                    authProvider.signOut();
+                  } else if (value == 'switch_role') {
+                    _showRoleSwitchDialog(context, authProvider);
+                  }
+                },
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 'switch_role',
+                    child: Text('Switch to ${isProvider ? 'Customer' : 'Provider'}'),
                   ),
-                ),
+                  const PopupMenuItem(
+                    value: 'logout',
+                    child: Text('Logout'),
+                  ),
+                ],
               ),
             ],
           ),
+          body: isProvider ? _buildProviderView(context) : _buildCustomerView(context),
+        );
+      },
+    );
+  }
 
-          // Greeting + CTA + quick services
+  Widget _buildCustomerView(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+          // Map section
           Container(
-            margin: const EdgeInsets.fromLTRB(16, 14, 16, 0),
-            padding: const EdgeInsets.fromLTRB(16, 18, 16, 16),
+            height: 200,
+            margin: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(16),
               boxShadow: const [
                 BoxShadow(
-                  color: Color(0x11000000),
-                  blurRadius: 14,
-                  offset: Offset(0, 6),
-                )
+                  color: Color(0x0F000000),
+                  blurRadius: 10,
+                  offset: Offset(0, 4),
+                ),
               ],
             ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Consumer<AtomicJobsProvider>(
+                builder: (context, jobsProvider, child) {
+                  return JobsMapWidget(
+                    jobs: jobsProvider.state.sortedJobs,
+                  );
+                },
+              ),
+            ),
+          ),
+
+          // Quick actions
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Greeting
-                Text.rich(
-                  TextSpan(
-                    children: [
-                      const TextSpan(
-                        text: 'Good morning,\n',
-                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
-                      ),
-                      TextSpan(
-                        text: 'Abdelrahman',
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w900,
-                          color: navy,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 14),
-
-                // Primary CTA
-                SizedBox(
-                  width: double.infinity,
-                  height: 52,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: blue,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-                    ),
-                    onPressed: () async {
-                      final result = await Navigator.of(context).push(
-                        MaterialPageRoute(
-                          fullscreenDialog: true, // 👈 gives you modal look
-                          builder: (_) => const BookingScreen(),
-                        ),
-                      );
-
-                      if (result != null) {
-                        // After booking, go to confirmation
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            fullscreenDialog: true,
-                            builder: (_) => BookingConfirmationScreen(
-                              address: result.address,
-                              scheduledAt: result.scheduledAt,
-                              primaryService: result.addonSalting
-                                  ? '${result.primaryService} + Salting'
-                                  : result.primaryService,
-                              price: result.price,
-                              notes: result.notes,
-                            ),
-                          ),
-                        );
-                      }
-                    },
-                    child: const Text('Book Snow Clearing'),
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                // Quick service tiles
+                const Text('Quick Actions',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                const SizedBox(height: 12),
                 Row(
                   children: [
                     Expanded(
@@ -190,22 +131,17 @@ class HomeScreen extends StatelessWidget {
                         icon: Icons.directions_car_rounded,
                         label: 'Driveway',
                         onTap: () {
-                          // TODO: preselect driveway in booking flow
                           Navigator.pushNamed(context, BookingScreen.route);
-
-
                         },
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: _ServiceTile(
-                        icon: Icons.snowing, // or custom shovel/salt icon
+                        icon: Icons.snowing,
                         label: 'Salting',
                         onTap: () {
-                          // TODO: preselect salting in booking flow
                           Navigator.pushNamed(context, BookingScreen.route);
-
                         },
                       ),
                     ),
@@ -224,7 +160,6 @@ class HomeScreen extends StatelessWidget {
                 Text('Scheduled jobs',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
                 Spacer(),
-                // Tap to open full list (History/Track)
               ],
             ),
           ),
@@ -265,7 +200,7 @@ class HomeScreen extends StatelessWidget {
               }
 
               return SizedBox(
-                height: 120,
+                height: 180,
                 child: ListView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   scrollDirection: Axis.horizontal,
@@ -275,9 +210,13 @@ class HomeScreen extends StatelessWidget {
                     return Container(
                       width: 260,
                       margin: EdgeInsets.only(right: index < upcomingJobs.length - 1 ? 12 : 0),
-                      child: AtomicJobCard(
-                        job: job,
-                        showActions: false,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 260),
+                        child: AtomicJobCard(
+                          job: job,
+                          showActions: false,
+                          compact: true,
+                        ),
                       ),
                     );
                   },
@@ -287,18 +226,168 @@ class HomeScreen extends StatelessWidget {
           ),
           const SizedBox(height: 18),
         ],
+      );
+  }
+
+  Widget _buildProviderView(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Provider Dashboard Summary
+        Container(
+          margin: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x0F000000),
+                blurRadius: 10,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Provider Dashboard',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: _StatCard(
+                      title: 'Available Jobs',
+                      value: '12',
+                      color: Colors.blue,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _StatCard(
+                      title: 'Completed',
+                      value: '45',
+                      color: Colors.green,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+
+        // Quick Actions for Providers
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Quick Actions',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _ServiceTile(
+                      icon: Icons.work_outline,
+                      label: 'View Jobs',
+                      onTap: () {
+                        Navigator.pushNamed(context, ProviderDashboardScreen.route);
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _ServiceTile(
+                      icon: Icons.attach_money,
+                      label: 'Earnings',
+                      onTap: () {
+                        Navigator.pushNamed(context, '/provider-earnings');
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 18),
+      ],
+    );
+  }
+
+  void _showRoleSwitchDialog(BuildContext context, AuthProvider authProvider) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Switch to ${authProvider.isProvider ? 'Customer' : 'Provider'}?'),
+        content: Text(
+          'You are currently a ${authProvider.isProvider ? 'Provider' : 'Customer'}. '
+          'Would you like to switch to ${authProvider.isProvider ? 'Customer' : 'Provider'} mode?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final newRole = authProvider.isProvider ? UserRole.customer : UserRole.provider;
+              authProvider.updateUserRole(newRole);
+              Navigator.pop(context);
+            },
+            child: const Text('Switch'),
+          ),
+        ],
       ),
-      // bottomNavigationBar: NavigationBar(
-      //   selectedIndex: 0,
-      //   onDestinationSelected: (i) {
-      //     // TODO: push to Track/Profile tabs; see RootNav below
-      //   },
-      //   destinations: const [
-      //     NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home), label: 'Home'),
-      //     NavigationDestination(icon: Icon(Icons.location_on_outlined), selectedIcon: Icon(Icons.location_on), label: 'Track'),
-      //     NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: 'Profile'),
-      //   ],
-      // ),
+    );
+  }
+}
+
+class _StatCard extends StatelessWidget {
+  final String title;
+  final String value;
+  final Color color;
+
+  const _StatCard({
+    required this.title,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey[600],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -334,40 +423,6 @@ class _ServiceTile extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _JobCard extends StatelessWidget {
-  final String title;
-  final String price;
-  const _JobCard({required this.title, required this.price});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 260,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-        boxShadow: const [
-          BoxShadow(color: Color(0x0F000000), blurRadius: 10, offset: Offset(0, 4)),
-        ],
-      ),
-      child: Row(
-        children: [
-          const CircleAvatar(
-            radius: 20,
-            backgroundColor: Color(0xFFE6F0FF),
-            child: Icon(Icons.calendar_today, size: 18, color: Color(0xFF0E63F6)),
-          ),
-          const SizedBox(width: 12),
-          Expanded(child: Text(title, style: const TextStyle(fontWeight: FontWeight.w700))),
-          Text(price, style: const TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF0E63F6))),
-        ],
       ),
     );
   }

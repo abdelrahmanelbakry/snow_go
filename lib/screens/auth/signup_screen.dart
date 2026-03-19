@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import '../home_screen.dart';
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
+import '../../services/auth_service.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -11,30 +12,35 @@ class SignUpScreen extends StatefulWidget {
 
 class _SignUpScreenState extends State<SignUpScreen> {
   final _form = GlobalKey<FormState>();
+  final _name = TextEditingController();
   final _email = TextEditingController();
   final _password = TextEditingController();
   final _confirm = TextEditingController();
+  UserRole _selectedRole = UserRole.customer;
   bool _busy = false;
   String? _err;
 
   Future<void> _signup() async {
     if (!_form.currentState!.validate()) return;
     setState(() { _busy = true; _err = null; });
-    try {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: _email.text.trim(),
-        password: _password.text.trim(),
-      );
+    
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final success = await authProvider.signUp(
+      _email.text.trim(),
+      _password.text.trim(),
+      _name.text.trim(),
+      _selectedRole,
+    );
+    
+    if (success) {
       if (!mounted) return;
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
-            (route) => false,
-      );
-    } on FirebaseAuthException catch (e) {
-      setState(() { _err = e.message; });
-    } finally {
-      if (mounted) setState(() { _busy = false; });
+      // AuthWrapper will handle navigation automatically
+      Navigator.of(context).pop();
+    } else {
+      setState(() { _err = authProvider.error; });
     }
+    
+    setState(() { _busy = false; });
   }
 
   @override
@@ -53,6 +59,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    TextFormField(
+                      controller: _name,
+                      decoration: const InputDecoration(labelText: "Full Name"),
+                      validator: (v) => (v==null || v.trim().isEmpty) ? "Enter your name" : null,
+                    ),
+                    const SizedBox(height: 12),
                     TextFormField(
                       controller: _email,
                       decoration: const InputDecoration(labelText: "Email"),
@@ -73,7 +85,41 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       obscureText: true,
                       validator: (v) => (v != _password.text) ? "Passwords do not match" : null,
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 16),
+                    // Role Selection
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.all(12),
+                            child: Text(
+                              'I am a:',
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                            ),
+                          ),
+                          RadioListTile<UserRole>(
+                            title: const Text('Customer'),
+                            subtitle: const Text('I need snow clearing services'),
+                            value: UserRole.customer,
+                            groupValue: _selectedRole,
+                            onChanged: (value) => setState(() => _selectedRole = value!),
+                          ),
+                          RadioListTile<UserRole>(
+                            title: const Text('Service Provider'),
+                            subtitle: const Text('I provide snow clearing services'),
+                            value: UserRole.provider,
+                            groupValue: _selectedRole,
+                            onChanged: (value) => setState(() => _selectedRole = value!),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
                     if (_err != null) Text(_err!, style: TextStyle(color: cs.error)),
                     const SizedBox(height: 12),
                     SizedBox(
@@ -81,7 +127,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       child: ElevatedButton(
                         onPressed: _busy ? null : _signup,
                         child: _busy ? const SizedBox(height: 22, width: 22, child: CircularProgressIndicator(strokeWidth: 2))
-                            : const Text("Create account"),
+                            : Text("Create ${_selectedRole == UserRole.customer ? 'Customer' : 'Provider'} Account"),
                       ),
                     ),
                   ],

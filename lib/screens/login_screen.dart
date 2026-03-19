@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:snow_go/screens/root_nav.dart';
+import '../services/auth_service.dart';
 import 'provider_signup_screen.dart';
 import 'customer_signup_screen.dart';
 
@@ -15,6 +16,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _form = GlobalKey<FormState>();
   final _email = TextEditingController();
   final _password = TextEditingController();
+  final AuthService _authService = AuthService();
   bool _obscure = true;
   bool _loading = false;
 
@@ -26,15 +28,58 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _login() async {
-    Navigator.pushReplacementNamed(context, RootNav.route);
-    //
-    // if (!(_form.currentState?.validate() ?? false)) return;
-    // setState(() => _loading = true);
-    // // TODO: Integrate your auth (Firebase Auth, etc.)
-    // await Future.delayed(const Duration(milliseconds: 800));
-    // if (!mounted) return;
-    // setState(() => _loading = false);
-    // On success: Navigator.pushReplacementNamed(context, HomeScreen.route);
+    if (!(_form.currentState?.validate() ?? false)) return;
+    
+    setState(() => _loading = true);
+    
+    try {
+      await _authService.signInWithEmailPassword(
+        _email.text.trim(),
+        _password.text,
+      );
+      
+      if (!mounted) return;
+      
+      // Navigate directly to main app since role selection is now integrated
+      Navigator.pushReplacementNamed(context, RootNav.route);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString()),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _loading = false);
+      }
+    }
+  }
+
+  Future<void> _signInWithGoogle() async {
+    setState(() => _loading = true);
+    
+    try {
+      await _authService.signInWithGoogle(UserRole.customer);
+      
+      if (!mounted) return;
+      
+      // Navigate directly to main app since role selection is now integrated
+      Navigator.pushReplacementNamed(context, RootNav.route);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString()),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _loading = false);
+      }
+    }
   }
 
   @override
@@ -125,9 +170,7 @@ class _LoginScreenState extends State<LoginScreen> {
             _SocialButton(
               label: 'Sign in with Google',
               asset: 'assets/google_g.png',
-              onPressed: () {
-                // TODO: Google sign-in
-              },
+              onPressed: _loading ? null : () => _signInWithGoogle(),
             ),
             const SizedBox(height: 12),
 
@@ -218,7 +261,7 @@ class _DividerWithText extends StatelessWidget {
 class _SocialButton extends StatelessWidget {
   final String label;
   final String asset;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
 
   const _SocialButton({required this.label, required this.asset, required this.onPressed});
 
