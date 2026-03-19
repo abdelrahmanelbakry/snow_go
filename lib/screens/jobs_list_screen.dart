@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/jobs_provider.dart';
-import '../widgets/job_card.dart';
+import '../widgets/atomic_job_card.dart';
 import 'job_details_screen.dart';
 import 'job_form_screen.dart';
 
@@ -11,7 +11,7 @@ class JobsListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final jobs = context.watch<JobsProvider>().jobs;
+    final jobs = context.watch<AtomicJobsProvider>().jobs;
 
     return Scaffold(
       appBar: AppBar(
@@ -48,7 +48,7 @@ class JobsListScreen extends StatelessWidget {
             ),
           )
               : ListView.separated(
-            itemBuilder: (_, i) => JobCard(
+            itemBuilder: (_, i) => AtomicJobCard(
               job: jobs[i],
               onTap: () => Navigator.pushNamed(
                   context, JobDetailsScreen.route, arguments: jobs[i].id),

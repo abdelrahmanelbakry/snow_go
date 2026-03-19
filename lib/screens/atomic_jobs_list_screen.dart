@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../providers/jobs_provider.dart';
 import '../models/atomic_job.dart';
 import '../widgets/atomic_job_card.dart';
-import '../widgets/atomic_error_handler.dart';
 
 /// Atomic jobs list screen with filtering and sorting
 class AtomicJobsListScreen extends StatefulWidget {
@@ -15,7 +14,7 @@ class AtomicJobsListScreen extends StatefulWidget {
   State<AtomicJobsListScreen> createState() => _AtomicJobsListScreenState();
 }
 
-class _AtomicJobsListScreenState extends State<AtomicJobsListScreen> with AtomicResultHandler {
+class _AtomicJobsListScreenState extends State<AtomicJobsListScreen> {
   JobStatus? _selectedStatus;
   String _sortBy = 'schedule'; // 'schedule', 'price', 'status'
   bool _ascending = true;
@@ -93,11 +92,22 @@ class _AtomicJobsListScreenState extends State<AtomicJobsListScreen> with Atomic
                   return const Center(child: CircularProgressIndicator());
                 }
 
-                return AtomicErrorHandler(
-                  error: jobsProvider.error,
-                  onRetry: () => jobsProvider.clearAllJobs(),
-                  child: _buildJobsList(jobsProvider),
-                );
+                if (jobsProvider.error != null) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('Error: ${jobsProvider.error}'),
+                        ElevatedButton(
+                          onPressed: () => jobsProvider.clearAllJobs(),
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+                
+                return _buildJobsList(jobsProvider);
               },
             ),
           ),
@@ -192,7 +202,7 @@ class _AtomicJobsListScreenState extends State<AtomicJobsListScreen> with Atomic
                       _DetailRow('ID', job.id),
                       _DetailRow('Customer', job.customerName),
                       _DetailRow('Address', job.address),
-                      _DetailRow('Service', job.service.label),
+                      _DetailRow('Service', job.service.name),
                       _DetailRow('Price', 'CA\$${job.price.toStringAsFixed(2)}'),
                       _DetailRow('Scheduled', job.scheduledAt.toString()),
                       _DetailRow('Status', _getStatusLabel(job.status)),

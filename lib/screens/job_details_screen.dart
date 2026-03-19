@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:snow_go/models/service_type.dart';
 import '../providers/jobs_provider.dart';
-import '../models/job.dart';
+import '../models/atomic_job.dart';
 import '../widgets/status_pill.dart';
 import '../widgets/section_title.dart';
 
@@ -14,8 +14,8 @@ class JobDetailsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final jobId = ModalRoute.of(context)!.settings.arguments as String;
-    final provider = context.watch<JobsProvider>();
-    final job = provider.byId(jobId)!;
+    final provider = context.watch<AtomicJobsProvider>();
+    final job = provider.getJobById(jobId)!;
     final df = DateFormat('EEE, MMM d • h:mm a');
 
     Widget infoRow(IconData icon, String text) => Row(
@@ -83,12 +83,12 @@ class JobDetailsScreen extends StatelessWidget {
 }
 
 class _ActionButtons extends StatelessWidget {
-  final Job job;
+  final AtomicJob job;
   const _ActionButtons({required this.job});
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.read<JobsProvider>();
+    final provider = context.read<AtomicJobsProvider>();
 
     switch (job.status) {
       case JobStatus.newRequest:
@@ -96,14 +96,14 @@ class _ActionButtons extends StatelessWidget {
           children: [
             Expanded(
               child: FilledButton(
-                onPressed: () => provider.updateStatus(job.id, JobStatus.assigned),
+                onPressed: () => provider.updateJobStatus(job.id, JobStatus.assigned),
                 child: const Text('Assign'),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: OutlinedButton(
-                onPressed: () => provider.updateStatus(job.id, JobStatus.cancelled),
+                onPressed: () => provider.updateJobStatus(job.id, JobStatus.cancelled),
                 child: const Text('Cancel'),
               ),
             ),
@@ -114,14 +114,14 @@ class _ActionButtons extends StatelessWidget {
           children: [
             Expanded(
               child: FilledButton(
-                onPressed: () => provider.updateStatus(job.id, JobStatus.inProgress),
+                onPressed: () => provider.updateJobStatus(job.id, JobStatus.inProgress),
                 child: const Text('Start job'),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: OutlinedButton(
-                onPressed: () => provider.updateStatus(job.id, JobStatus.cancelled),
+                onPressed: () => provider.updateJobStatus(job.id, JobStatus.cancelled),
                 child: const Text('Cancel'),
               ),
             ),
@@ -132,14 +132,14 @@ class _ActionButtons extends StatelessWidget {
           children: [
             Expanded(
               child: FilledButton(
-                onPressed: () => provider.updateStatus(job.id, JobStatus.completed),
+                onPressed: () => provider.updateJobStatus(job.id, JobStatus.completed),
                 child: const Text('Mark complete'),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: OutlinedButton(
-                onPressed: () => provider.updateStatus(job.id, JobStatus.cancelled),
+                onPressed: () => provider.updateJobStatus(job.id, JobStatus.cancelled),
                 child: const Text('Cancel'),
               ),
             ),

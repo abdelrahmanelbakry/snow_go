@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import '../models/atomic_job.dart';
 import '../models/service_type.dart';
@@ -37,7 +36,7 @@ class JobsState {
 
 /// Atomic jobs provider with atomic operations
 class AtomicJobsProvider extends AtomicState<JobsState> with AtomicOperationsMixin<JobsState> {
-  final _uuid = const Uuid();
+  static final _uuid = const Uuid();
   final AtomicBackendService _backendService = AtomicBackendService();
 
   AtomicJobsProvider() : super(const JobsState()) {

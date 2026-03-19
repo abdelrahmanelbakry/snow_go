@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/atomic_job.dart';
+import '../models/service_type.dart';
 import '../providers/jobs_provider.dart';
-import '../core/atomic_operations.dart';
+import '../core/atomic_state.dart';
 
 /// Atomic job card widget with optimistic updates
 class AtomicJobCard extends StatefulWidget {

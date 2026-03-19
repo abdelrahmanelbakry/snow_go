@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/job.dart';
+import '../models/atomic_job.dart';
 
 class StatusPill extends StatelessWidget {
   final JobStatus status;

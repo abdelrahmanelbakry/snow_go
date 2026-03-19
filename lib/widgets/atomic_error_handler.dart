@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../core/atomic_operations.dart';
+import '../core/atomic_state.dart';
 
 /// Widget for handling atomic operation errors
 class AtomicErrorHandler extends StatelessWidget {

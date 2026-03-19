@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/atomic_job.dart';
+import '../core/atomic_state.dart';
 import '../core/atomic_operations.dart';
 
 /// Atomic Firebase operations service
